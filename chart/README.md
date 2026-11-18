@@ -66,3 +66,7 @@ persisted across pod restarts by a 5 Gi PersistentVolumeClaim mounted at
 `/app/POSTS`. Set `persistence.size`, `persistence.accessModes`, or
 `persistence.storageClassName` in `values.yaml` to match the cluster's storage
 provisioner.
+
+```
+  flux reconcile kustomization flux-system -n flux-system --with-source
+```

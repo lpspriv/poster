@@ -7,7 +7,8 @@ image:
   name: "poster-api"
   tag: "45f8a4131fa5e7265cc19386290d78c3e52e5ed1"
 
-imagePullSecrets: []
+imagePullSecrets: 
+  - name: regcred
 nameOverride: ""
 fullnameOverride: ""
 
