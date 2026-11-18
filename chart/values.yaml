@@ -2,7 +2,7 @@ namespace: posterapi
 replicaCount: 1
 
 image:
-  repository: localhost:5000
+  repository: registry.lpspriv.com:5000
   pullPolicy: IfNotPresent
   name: "poster-api"
   tag: ""

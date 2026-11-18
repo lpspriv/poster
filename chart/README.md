@@ -22,6 +22,18 @@ helm upgrade --install poster ./chart \
   --set-string secret.serpApiKey='YOUR_SERPAPI_API_KEY'
 ```
 
+## Build and publish the Poster API image
+
+Commit the Poster source changes, then set `REGISTRY_PASSWORD` from your CI
+secret store and run `poster/ci.sh` from the repository root. The script builds
+and pushes `registry.lpspriv.com:5000/poster-api` tagged with the full Git
+commit SHA.
+
+To deploy that image with Flux, set `image.repository` to
+`registry.lpspriv.com:5000` and `image.tag` to the same commit SHA in the
+Poster `HelmRelease` values in the Flux GitOps repository. The script publishes
+the API image only; build and publish the Nginx image separately if it changes.
+
 For production, avoid passing credentials on the command line. Create a Secret
 separately and set `secret.existingSecret` to its name. The Secret must contain
 keys named `OPENAI_API_KEY` and `SERPAPI_API_KEY`.
