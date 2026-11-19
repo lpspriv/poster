@@ -47,7 +47,7 @@ addresses. Its TLS Secret is issued by cert-manager. Image pull secrets,
 resource requests and limits, pod labels and annotations, node selectors,
 affinity, and tolerations can be configured in `values.yaml`.
 
-The route requires the `letsencrypt-hetzner` ClusterIssuer, installed from the
+The route initially uses the `letsencrypt-staging-hetzner` ClusterIssuer, installed from the
 `flux_gitops` repository, and a Hetzner DNS API token Secret named `hetzner` in
 the `cert-manager` namespace. Keep the token out of Git; create it in the
 cluster before expecting the certificate to become Ready:

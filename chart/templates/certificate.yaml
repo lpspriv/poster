@@ -9,7 +9,7 @@ metadata:
 spec:
   secretName: {{ .Values.ingress.tlsSecretName }}
   issuerRef:
-    name: letsencrypt-hetzner
+    name: letsencrypt-staging-hetzner
     kind: ClusterIssuer
   dnsNames:
     - {{ .Values.ingress.host | quote }}
