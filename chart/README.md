@@ -40,9 +40,30 @@ keys named `OPENAI_API_KEY` and `SERPAPI_API_KEY`.
 
 The Nginx Service is the frontend entry point (ClusterIP by default); configure
 `nginx.service.type` as `LoadBalancer` or `NodePort` when appropriate. Nginx
-proxies `/api/` to the internal Go API Service. Image pull secrets, resource
-requests and limits, pod labels and annotations, node selectors, affinity, and
-tolerations can be configured in `values.yaml`.
+proxies `/api/` to the internal Go API Service. The chart also creates a private
+Traefik route at `https://api2.lpspriv.com/poster/`; Traefik strips `/poster`
+before forwarding to the Go API service and allows only RFC1918 client
+addresses. Its TLS Secret is issued by cert-manager. Image pull secrets,
+resource requests and limits, pod labels and annotations, node selectors,
+affinity, and tolerations can be configured in `values.yaml`.
+
+The route requires the `letsencrypt-hetzner` ClusterIssuer, installed from the
+`flux_gitops` repository, and a Hetzner DNS API token Secret named `hetzner` in
+the `cert-manager` namespace. Keep the token out of Git; create it in the
+cluster before expecting the certificate to become Ready:
+
+```sh
+kubectl create secret generic hetzner \
+  --namespace cert-manager \
+  --from-literal=token="$HETZNER_DNS_TOKEN" \
+  --dry-run=client -o yaml | kubectl apply -f -
+```
+
+Configure internal DNS so `api2.lpspriv.com` resolves to the cluster node's
+private address. Do not publish a public DNS record for this hostname. Also
+restrict inbound access to Traefik's HTTPS NodePort (30443) to private networks
+in the Hetzner firewall; the Traefik middleware provides an additional
+RFC1918 source-address check.
 
 ## API
 
