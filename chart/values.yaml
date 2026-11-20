@@ -37,18 +37,13 @@ nginx:
 
 ingress:
   enabled: true
-  host: api2.lpspriv.com
+  host: api.lpspriv.com
   className: traefik
-  tlsSecretName: api2-lpspriv-com-tls
-  privateSourceRanges:
-    - 10.0.0.0/8
-    - 172.16.0.0/12
-    - 192.168.0.0/16
+  tlsSecretName: api-lpspriv-com-tls
+  authSecretName: poster-api-auth
 
 secret:
   existingSecret: ""
-  openaiApiKey: ""
-  serpApiKey: ""
 
 podAnnotations: {}
 podLabels: {}

@@ -18,8 +18,6 @@ helm upgrade --install poster ./chart \
   --set image.tag=0.1.0 \
   --set nginx.image.repository=registry.example.com \
   --set nginx.image.tag=0.1.0 \
-  --set-string secret.openaiApiKey='YOUR_OPENAI_API_KEY' \
-  --set-string secret.serpApiKey='YOUR_SERPAPI_API_KEY'
 ```
 
 ## Build and publish the Poster API image
@@ -38,19 +36,21 @@ For production, avoid passing credentials on the command line. Create a Secret
 separately and set `secret.existingSecret` to its name. The Secret must contain
 keys named `OPENAI_API_KEY` and `SERPAPI_API_KEY`.
 
-The Nginx Service is the frontend entry point (ClusterIP by default); configure
-`nginx.service.type` as `LoadBalancer` or `NodePort` when appropriate. Nginx
-proxies `/api/` to the internal Go API Service. The chart also creates a private
-Traefik route at `https://api2.lpspriv.com/poster/`; Traefik strips `/poster`
-before forwarding to the Go API service and allows only RFC1918 client
-addresses. Its TLS Secret is issued by cert-manager. Image pull secrets,
-resource requests and limits, pod labels and annotations, node selectors,
-affinity, and tolerations can be configured in `values.yaml`.
+The chart leaves its Nginx test frontend disabled by default. Set
+`nginx.enabled=true` to deploy it for testing. The public API route is
+`https://api.lpspriv.com/poster/`; Traefik strips `/poster` before forwarding
+to the Go API service and requires HTTP Basic authentication. The auth
+Middleware reads hashed users from the `poster-api-auth` Secret in `posterapi`.
+Flux owns the TLS Certificate and must create the `api-lpspriv-com-tls` Secret
+in `posterapi`. Image pull secrets, resource requests and limits, pod labels
+and annotations, node selectors, affinity, and tolerations can be configured in
+`values.yaml`.
 
-The route initially uses the `letsencrypt-staging-hetzner` ClusterIssuer, installed from the
-`flux_gitops` repository, and a Hetzner DNS API token Secret named `hetzner` in
-the `cert-manager` namespace. Keep the token out of Git; create it in the
-cluster before expecting the certificate to become Ready:
+Flux installs the `letsencrypt-production-hetzner` ClusterIssuer and uses the
+Hetzner DNS API token Secret named `hetzner` in the `cert-manager` namespace.
+The public DNS record for `api.lpspriv.com` must point to the Traefik public
+address. Keep the Hetzner token out of Git; create it as a Secret or Sealed
+Secret before expecting the Certificate to become Ready:
 
 ```sh
 kubectl create secret generic hetzner \
@@ -59,11 +59,12 @@ kubectl create secret generic hetzner \
   --dry-run=client -o yaml | kubectl apply -f -
 ```
 
-Configure internal DNS so `api2.lpspriv.com` resolves to the cluster node's
-private address. Do not publish a public DNS record for this hostname. Also
-restrict inbound access to Traefik's HTTPS NodePort (30443) to private networks
-in the Hetzner firewall; the Traefik middleware provides an additional
-RFC1918 source-address check.
+The CORS Middleware allows browser requests from `https://lpspriv.com` and
+`https://www.lpspriv.com`, the origins serving the Poster page. Since these
+origins differ from `https://api.lpspriv.com`, browsers preflight requests that
+include `Authorization` or JSON content type. Traefik handles the preflight
+before Basic Auth, then requires Basic Auth on the actual API and image
+requests.
 
 ## API
 

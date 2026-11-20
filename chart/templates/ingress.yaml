@@ -12,23 +12,43 @@ spec:
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: {{ include "poster.fullname" . }}-private-only
+  name: {{ include "poster.fullname" . }}-cors
   namespace: {{ .Values.namespace }}
 spec:
-  ipAllowList:
-    sourceRange:
-      {{- toYaml .Values.ingress.privateSourceRanges | nindent 6 }}
+  headers:
+    accessControlAllowMethods:
+      - GET
+      - POST
+      - OPTIONS
+    accessControlAllowHeaders:
+      - Authorization
+      - Content-Type
+    accessControlAllowOriginList:
+      - https://lpspriv.com
+      - https://www.lpspriv.com
+    accessControlMaxAge: 600
+    addVaryHeader: true
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "poster.fullname" . }}-auth
+  namespace: {{ .Values.namespace }}
+spec:
+  basicAuth:
+    secret: {{ .Values.ingress.authSecretName }}
+    removeHeader: false
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "poster.fullname" . }}-private-api
+  name: {{ include "poster.fullname" . }}-api
   namespace: {{ .Values.namespace }}
   labels:
     {{- include "poster.labels" . | nindent 4 }}
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    traefik.ingress.kubernetes.io/router.middlewares: {{ .Values.namespace }}-{{ include "poster.fullname" . }}-strip-poster-prefix@kubernetescrd,{{ .Values.namespace }}-{{ include "poster.fullname" . }}-private-only@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Values.namespace }}-{{ include "poster.fullname" . }}-cors@kubernetescrd,{{ .Values.namespace }}-{{ include "poster.fullname" . }}-auth@kubernetescrd,{{ .Values.namespace }}-{{ include "poster.fullname" . }}-strip-poster-prefix@kubernetescrd
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   tls:
