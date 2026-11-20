@@ -23,6 +23,7 @@ persistence:
   storageClassName: ""
 
 nginx:
+  enabled: false
   replicaCount: 1
   image:
     repository: registry.lpspriv.com:5000
