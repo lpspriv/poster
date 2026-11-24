@@ -1,7 +1,8 @@
 # Poster Helm chart
 
-Deploys the Poster Go API in the `posterapi` namespace. The optional Nginx
-test frontend is disabled by default (`nginx.enabled: false`).
+Deploys the Poster Go API into the Helm release namespace. Flux sets the
+release target to `posterapi`. The optional Nginx test frontend is disabled by
+default (`nginx.enabled: false`).
 
 ## Public route
 
