@@ -27,6 +27,10 @@ the private registry. Create `poster-api-auth` and the API credential Secret
 before exposing the route. The API credential Secret needs `OPENAI_API_KEY`
 and `SERPAPI_API_KEY`.
 
+Helm keeps the posts PVC if the release is uninstalled, including when Flux
+prunes the HelmRelease. The claim is then orphaned and must be managed or
+deleted separately after its data is no longer needed.
+
 ## API
 
 The API listens on port `8080` inside the cluster:

@@ -3,6 +3,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ include "poster.postsClaimName" . }}
   namespace: {{ .Values.namespace }}
+  annotations:
+    helm.sh/resource-policy: keep
   labels:
     {{- include "poster.labels" . | nindent 4 }}
 spec:
